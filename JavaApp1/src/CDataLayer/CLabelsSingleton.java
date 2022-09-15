@@ -36,7 +36,7 @@ public class CLabelsSingleton {
 		
 		try {	
 
-			JOptionPane.showMessageDialog(null,"CLabelsSingleton1");
+			//JOptionPane.showMessageDialog(null,"CLabelsSingleton1");
 			RefreshLabels();
 			
 		}
@@ -59,7 +59,7 @@ public class CLabelsSingleton {
 	//----------------------------------------------------------------
 	public static void Initialize() {
 		try {
-			JOptionPane.showMessageDialog(null,"Initialize");
+			//JOptionPane.showMessageDialog(null,"Initialize");
 			m_Instance = new CLabelsSingleton();
 		}
 		catch(Exception xpt){
@@ -127,7 +127,7 @@ public class CLabelsSingleton {
 			}			
 		}
 		catch(Exception xpt) {
-			JOptionPane.showMessageDialog(null,"GetLabel");
+			JOptionPane.showMessageDialog(null, xpt.toString(),"GetLabel", nID);
 		}
 		return szLabel;
 	}

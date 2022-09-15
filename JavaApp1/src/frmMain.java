@@ -32,11 +32,11 @@ import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 
 // ------------------------------------------------------------
-public class frmMain extends JFrame {
+public class frmMain extends JInternalFrame {
 
-	/**
-	 * 
-	 */
+	static int openFrameCount = 0;
+	static final int xOffset = 30, yOffset = 30;
+	
 	private static final long serialVersionUID = 1L;
 	private JPanel contentPane;
 	private static JTable table;
@@ -51,45 +51,49 @@ public class frmMain extends JFrame {
 	private JLabel lblNewLabel_3;
 	public static CPeople m_peopleData = new CPeople();
 	private JMenuBar menuBar;
+	JMenuItem m1, m2, m3;
 	JLabel lblStatus;
 	public static JComboBox<String> comboBox ;
 	JRadioButton rdBtnMale;
 	JRadioButton rdBtnFemale;
 
-	// ------------------------------------------------------------
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					SetupColumns();
-					frmMain frame = new frmMain();
-					frame.setVisible(true);
-					 GetComboBoxValues(CDefines.TYPE_LABELS);
 
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	
 
-	// ------------------------------------------------------------
+	
 	/**
 	 * Create the frame.
 	 */
 	public frmMain() {
 		try {
-			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			
+
 			setBounds(100, 100, 539, 499);
+			getContentPane().setLayout(null);			
+			setLocation(xOffset*openFrameCount, yOffset*openFrameCount);	
+			SetupColumns();
+			//frmMain frame = new frmMain();
+
+			
+			
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			//setBounds(100, 100, 539, 499);
 
 			menuBar = new JMenuBar();
 			setJMenuBar(menuBar);
 
 			JMenu mnNewMenu = new JMenu("File");
+			JMenu mnNewView= new JMenu("View");
+			JMenu mnNewConfiguration= new JMenu("Configuration");
+			JMenu mnNewWindow= new JMenu("Window");			
+			JMenu mnNewAbout= new JMenu("About");
+			
+			
 			menuBar.add(mnNewMenu);
+			menuBar.add(mnNewView);
+			menuBar.add(mnNewConfiguration);
+			menuBar.add(mnNewWindow);			
+			menuBar.add(mnNewAbout);
 
 			JMenu mnNewMenu_1 = new JMenu("Close");
 			mnNewMenu.add(mnNewMenu_1);
@@ -131,35 +135,35 @@ public class frmMain extends JFrame {
 			contentPane.add(btnUpdate);
 			// ------------------------------------------------------------
 			txtFirst = new JTextField();
-			txtFirst.setBounds(140, 232, 116, 22);
+			txtFirst.setBounds(58, 232, 116, 22);
 			contentPane.add(txtFirst);
 			txtFirst.setColumns(10);
 
 			txtLast = new JTextField();
-			txtLast.setBounds(268, 230, 116, 22);
+			txtLast.setBounds(186, 230, 116, 22);
 			contentPane.add(txtLast);
 			txtLast.setColumns(10);
 
 			txtAge = new JTextField();
-			txtAge.setBounds(393, 231, 116, 22);
+			txtAge.setBounds(311, 231, 116, 22);
 			contentPane.add(txtAge);
 			txtAge.setColumns(10);
 
 			JLabel lblNewLabel = new JLabel("First");
-			lblNewLabel.setBounds(140, 213, 56, 16);
+			lblNewLabel.setBounds(58, 213, 56, 16);
 			contentPane.add(lblNewLabel);
 
 			JLabel lblNewLabel_1 = new JLabel("Last");
-			lblNewLabel_1.setBounds(268, 213, 56, 16);
+			lblNewLabel_1.setBounds(186, 213, 56, 16);
 			contentPane.add(lblNewLabel_1);
 
 			JLabel lblNewLabel_2 = new JLabel("Age");
-			lblNewLabel_2.setBounds(393, 213, 56, 16);
+			lblNewLabel_2.setBounds(311, 213, 56, 16);
 			contentPane.add(lblNewLabel_2);
 
 			txtID = new JTextField();
 			txtID.setEnabled(false);
-			txtID.setBounds(12, 231, 116, 22);
+			txtID.setBounds(12, 231, 36, 22);
 			contentPane.add(txtID);
 			txtID.setColumns(10);
 
@@ -288,7 +292,7 @@ public class frmMain extends JFrame {
 			SetYesNoRadioValue(rdBtnMale, rdBtnFemale, model.getValueAt(selectRowIndex, 4).toString().trim());
 			//comboBox.setSelectedIndex((int) model.getValueAt(selectRowIndex, 5));
 			
-			comboBox.setSelectedIndex((int) model.getValueAt(selectRowIndex, 5));
+			comboBox.setSelectedItem((String) model.getValueAt(selectRowIndex, 5));
 	
 		}
 
@@ -437,10 +441,11 @@ public class frmMain extends JFrame {
 				row[2] = list.get(i).getszLastName();
 				row[3] = list.get(i).getnAge();
 				row[4] = list.get(i).getbSex();
-				row[5] = CLabelsSingleton.getM_Instance().GetLabel(CLabelsSingleton.LABEL_YESNO, list.get(i).getnTitle());
+				row[5] = GetComboBox(list.get(i).getnTitle());
+				//row[5] = CLabelsSingleton.getM_Instance().GetLabel(CLabelsSingleton.LABEL_YESNO, list.get(i).getnTitle());
 				
-				String abc  = CLabelsSingleton.getM_Instance().GetLabel(CLabelsSingleton.LABEL_YESNO, list.get(i).getnTitle());
-
+				//String abc  = CLabelsSingleton.getM_Instance().GetLabel(CLabelsSingleton.LABEL_YESNO, list.get(i).getnTitle());
+				//JOptionPane.showMessageDialog(null,abc + "Test");
 				model.addRow(row);
 
 			}
@@ -503,19 +508,26 @@ public class frmMain extends JFrame {
 
 	// -------------------------------------------------------------
 
-	public static void GetComboBox() {
+	public static  String GetComboBox(int m_nTypeID) {
 	
+		ResultSet Rs = null;
+		PreparedStatement pstmt ;
+		String a = "";
 		try {
-
-
-
+			CDataBase.GetConn();
+			String query = String.format("SELECT szText FROM tblLabels where nGroupID = 1 and nLabelSingletonID = %s  ORDER BY szText; ", m_nTypeID);
+			//System.out.print(query);
+			pstmt = CDataBase.con.prepareStatement(query);
+			Rs = pstmt.executeQuery();
+			while (Rs.next()) {
+			a = Rs.getString("szText");
+			System.out.print(a);
+			}
 			
-		
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			JOptionPane.showMessageDialog(null, e, "GetComboBox", JOptionPane.ERROR_MESSAGE);
-
+		} catch (SQLException ex) {
+			JOptionPane.showMessageDialog(null, ex, "GetComboBox", JOptionPane.ERROR_MESSAGE);
 		}
+		return a;		
 	}
 	//----------------------------------------------------------------------
 	public static void  GetComboBoxValues(int m_nTypeID) {
@@ -523,6 +535,7 @@ public class frmMain extends JFrame {
 		ResultSet Rs = null;
 		PreparedStatement pstmt ;
 		try {
+			System.out.println("TEST1");
 			CDataBase.GetConn();
 			String query = String.format("SELECT * FROM %s  ORDER BY szText", CDefines.m_szTableNames[m_nTypeID].toString());
 			pstmt = CDataBase.con.prepareStatement(query);
@@ -555,7 +568,7 @@ public class frmMain extends JFrame {
 			}			
 			
 		} catch (SQLException ex) {
-			JOptionPane.showMessageDialog(null, ex, "GetComboBoxValues", JOptionPane.ERROR_MESSAGE);
+			JOptionPane.showMessageDialog(null, ex, "ConvertLabels", JOptionPane.ERROR_MESSAGE);
 		}		
 
 	}

@@ -11,7 +11,7 @@ public class CLabelsDB {
 
 	
 	public static ArrayList<CLabels> GetLabelsDB(int m_nTypeID, int nGroupID) {
-		JOptionPane.showMessageDialog(null, "CLabelsDB");
+		//JOptionPane.showMessageDialog(null, "CLabelsDB");
 		ArrayList<CLabels> listCategory = new ArrayList<CLabels>();
 		ResultSet Rs = null;
 		PreparedStatement pstmt ;
